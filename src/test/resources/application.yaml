@@ -1,0 +1,32 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: "user-management"
+  cloud:
+    gcp:
+      pubsub:
+        project-id: test
+        emulator-host: localhost:8085
+        publisher:
+          executor-threads: 1
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults: false
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: root
+    password: password
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: 5
+
+user:
+  events:
+    topic: user

@@ -1,0 +1,23 @@
+include:
+  - project: pockid/backend/gitlab-ci-templates
+    file: PockidBackendStarterSpringBoot.yml
+
+variables:
+  DOCKER_BUILD: "true"
+  GKE_DEPLOY: "true"
+  HELM_CHART: ./chart
+
+test:
+  services:
+    - name: postgres:9.6
+      alias: postgres
+    - name: registry.gitlab.com/pockid/backend/docker/pubsub-emulator
+      alias: pubsub
+  variables:
+    # Variables for postgres service
+    POSTGRES_DB: postgres
+    POSTGRES_USER: root
+    POSTGRES_PASSWORD: password
+    # Variables for spring
+    SPRING_CLOUD_GCP_PUBSUB_EMULATORHOST: pubsub:8085
+    SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres

@@ -1,0 +1,81 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ .Values.app }}
+  labels:
+    app: {{ .Values.app }}
+    app.kubernetes.io/managed-by: helm
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  replicas: {{ .Values.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ .Values.app }}
+      version: {{ .Values.version }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.app }}
+        version: {{ .Values.version }}
+    spec:
+      volumes:
+        - name: files
+          secret:
+            secretName: {{ .Values.googleApplicationCredentialsSecret }}
+            items:
+              - key: credentials
+                path: secret/credentials.json
+      containers:
+        - name: {{ .Values.app }}
+          image: registry.gitlab.com/pockid/backend/{{ .Values.app }}:{{ .Values.version }}
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: files
+              mountPath: "/etc/files"
+              readOnly: true
+          env:
+            - name: SERVER_PORT
+              value: {{ .Values.port | default 80 | quote }}
+            - name: USER_EVENTS_TOPIC
+              value: {{ .Values.pubSubUserTopic | quote }}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/etc/files/secret/credentials.json"
+            - name: SPRING_HIKARI_CONNECTION-TIMEOUT
+              value: "30000"
+            - name: SPRING_HIKARI_MAXIMUM-POOL-SIZE
+              value: "5"
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.databaseSecret }}
+                  key: url
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.databaseSecret }}
+                  key: user
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.databaseSecret }}
+                  key: password
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: {{ .Values.port | default 80 }}
+            initialDelaySeconds: 15
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: {{ .Values.port | default 80 }}
+            initialDelaySeconds: 10
+            periodSeconds: 3
+          ports:
+            - name: http-web
+              containerPort: {{ .Values.port | default 80 }}
+      imagePullSecrets:
+        - name: {{ .Values.imagePullSecret }}

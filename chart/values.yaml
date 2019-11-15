@@ -1,0 +1,32 @@
+# REQUIRED: Name of the application
+app: user-management
+
+# The web port where application is exposed to. Defaults to 80
+# port: 80
+
+# REQUIRED: Version of the application. The docker image with this version tag must exist in the container registry
+#version: 0.0.1
+
+# Number of replicas to be deployed. Defaults to 1
+# replicaCount: 2
+
+# REQUIRED: Kubernetes secret name containing database credentials.
+# The secret must be present in the namespace where this application is being deployed.
+# The secret must contain following keys:
+#   1. url (JDBC connection string of the postgres database) e.g. jdbc:postgresql://localhost:5432/postgres
+#   2. user (username for the database)
+#   3. password (password of the above provided user)
+databaseSecret: user-management-database-credentials
+
+# REQUIRED: Google Pub/Sub topic to push events to. Note: This topic should be created before hand.
+pubSubUserTopic: user
+
+# REQUIRED: Kubernetes secret name containing google service account json key to authenticate to Pub/Sub topic.
+# Service account must have publisher permissions to the `pubSubUserTopic`.
+# The secret must be present in the namespace where this application is being deployed.
+# The secret must contain following keys:
+#   1. credentials (service account json key content)
+googleApplicationCredentialsSecret: google-application-credentials
+
+# REQUIRED: The kubernetes docker config secret name to pull container images
+imagePullSecret: gitlab-registry-auth

@@ -1,0 +1,8 @@
+{
+  "firstName": "FirstName",
+  "lastName": "LastName",
+  "nickName": "NickName",
+  "dateOfBirth": "1992-12-12",
+  "gender": "MALE",
+  "isParent": "false"
+}
